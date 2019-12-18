@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<script src="simpletest.js"></script>
+<script>
+
+function newToFixed(number, precision) {
+	var decimalString = moveDecimal(number, precision);
+	var convertedNum = Math.round(Number(decimalString)) / (Math.pow(10, precision));
+	var finalString = convertedNum.toFixed(precision);
+	return finalString;
+}
+
+function moveDecimal(number, precision) {
+	var value = number.toString();
+	var splitString = value.split('');
+	var decimalIndex = splitString.indexOf('.');
+	var newDecimalIndex = decimalIndex + precision;
+	var decimalLength = splitString.length - decimalIndex - 1;
+	splitString.splice(decimalIndex, 1);
+	splitString.splice(newDecimalIndex, 0, '.');
+	var compiledString = splitString.join('');
+
+	if (precision > decimalLength) {
+		throw new RangeError('Precision exceeds the number of digits after decimal point.');
+	}
+	return compiledString;
+}
+
+tests({
+	'moveDecimal (helper function) should return a string value.': function() {
+		var result = moveDecimal(1.005, 2);
+		eq(typeof result, 'string');
+	},
+	'moveDecimal should shift the decimal position of a value to the right per the precision.': function() {
+		var result = moveDecimal(1.005, 2);
+		eq(result, '100.5');
+	},
+	'moveDecimal should throw a range error if precision > the number of digits right of the decimal.': function() {
+		var isRangeError = false;
+		try {
+			moveDecimal(0.015, 4);
+		} catch(e) {
+			isRangeError = (e instanceof RangeError);
+		}
+		eq(isRangeError, true);
+	},
+	'newToFixed should accept a number value and return a string value.': function() {
+		var result = newToFixed(1.005);
+		eq(typeof result, 'string');
+	},
+	'newToFixed should handle numbers less than 1, removing extraneous zeroes left of the decimal once moveDecimal is run.': function() {
+		var result = newToFixed(0.615, 2);
+		eq(result, '0.62');
+	},
+	'newToFixed should accept a precision argument as the number of decimal points to round a given value to.': function() {
+		var result = newToFixed(1.005, 2);
+		eq(result, '1.01');
+	}
+
+});
+</script>
+
+</html>
